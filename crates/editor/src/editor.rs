@@ -1838,28 +1838,6 @@ impl Editor {
         self.show_copilot_suggestions = show_copilot_suggestions;
     }
 
-    // TODO kb remove
-    pub fn test_set_suggestion(
-        &mut self,
-        new_suggestion: &str,
-        position: Anchor,
-        cx: &mut ViewContext<Self>,
-    ) {
-        let new_inlay = Inlay {
-            id: InlayId::Suggestion(post_inc(&mut self.next_inlay_id)),
-            position,
-            text: new_suggestion.into(),
-        };
-        let to_remove = self
-            .copilot_state
-            .suggestion
-            .replace(new_inlay.clone())
-            .map(|old_inlay| old_inlay.id)
-            .into_iter()
-            .collect::<Vec<_>>();
-        self.splice_inlay_hints(to_remove, vec![new_inlay], cx)
-    }
-
     pub fn set_use_modal_editing(&mut self, to: bool) {
         self.use_modal_editing = to;
     }
@@ -3136,7 +3114,7 @@ impl Editor {
                     (InvalidationStrategy::RefreshRequested, None)
                 } else {
                     self.inlay_hint_cache.clear();
-                    self.splice_inlay_hints(
+                    self.splice_inlays(
                         self.visible_inlay_hints(cx)
                             .iter()
                             .map(|inlay| inlay.id)
@@ -3158,7 +3136,7 @@ impl Editor {
                         to_remove,
                         to_insert,
                     })) => {
-                        self.splice_inlay_hints(to_remove, to_insert, cx);
+                        self.splice_inlays(to_remove, to_insert, cx);
                         return;
                     }
                     ControlFlow::Break(None) => return,
@@ -3171,7 +3149,7 @@ impl Editor {
                     to_insert,
                 }) = self.inlay_hint_cache.remove_excerpts(excerpts_removed)
                 {
-                    self.splice_inlay_hints(to_remove, to_insert, cx);
+                    self.splice_inlays(to_remove, to_insert, cx);
                 }
                 return;
             }
@@ -3194,7 +3172,7 @@ impl Editor {
             ignore_debounce,
             cx,
         ) {
-            self.splice_inlay_hints(to_remove, to_insert, cx);
+            self.splice_inlays(to_remove, to_insert, cx);
         }
     }
 
@@ -3275,7 +3253,7 @@ impl Editor {
         }
     }
 
-    fn splice_inlay_hints(
+    fn splice_inlays(
         &self,
         to_remove: Vec<InlayId>,
         to_insert: Vec<Inlay>,
