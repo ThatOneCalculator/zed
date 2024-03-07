@@ -34,9 +34,17 @@ pub enum DiffHunkStatus {
     Removed,
 }
 
+pub struct BufferRow(pub u32);
+pub struct Row<T>(pub u32, _p: std::marker::PhantomData<T>); // T == Buffer (T ==MultiBuffer, T == DisplayMap)
+
+impl<T> Copy for Row<T> {};
+
+type MultiBufferRow = Row<MultiBuffer>;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DiffHunk<T> {
     pub buffer_range: Range<T>,
+    pub buffer_singleton: (Model<Budffer>, Range<BufferRow>),
     pub diff_base_byte_range: Range<usize>,
 }
 
