@@ -386,7 +386,8 @@ pub struct Editor {
     show_gutter: bool,
     show_wrap_guides: Option<bool>,
     placeholder_text: Option<Arc<str>>,
-    highlighted_rows: Option<Range<u32>>,
+    highlight_order: usize,
+    highlighted_rows: HashMap<TypeId, Vec<(usize, Range<Anchor>, Hsla)>>,
     background_highlights: BTreeMap<TypeId, BackgroundHighlight>,
     nav_history: Option<ItemNavHistory>,
     context_menu: RwLock<Option<ContextMenu>>,
@@ -1523,7 +1524,8 @@ impl Editor {
             show_gutter: mode == EditorMode::Full,
             show_wrap_guides: None,
             placeholder_text: None,
-            highlighted_rows: None,
+            highlight_order: 0,
+            highlighted_rows: HashMap::default(),
             background_highlights: Default::default(),
             nav_history: None,
             context_menu: RwLock::new(None),
@@ -8921,12 +8923,56 @@ impl Editor {
         }
     }
 
-    pub fn highlight_rows(&mut self, rows: Option<Range<u32>>) {
-        self.highlighted_rows = rows;
+    pub fn highlight_rows<T: 'static>(
+        &mut self,
+        rows: Range<Anchor>,
+        color: Option<Hsla>,
+        cx: &mut ViewContext<Self>,
+    ) {
+        // let key = TypeId::of::<T>();
+        // let highlight_order = post_inc(&mut self.highlight_order);
+        // let highlighted_rows = self
+        //     .highlighted_rows
+        //     .entry(key)
+        //     .or_insert_with(|| (highlight_order, HashMap::default()));
+        // highlighted_rows.0 = highlight_order;
+        // highlighted_rows.1.clear();
+        // highlighted_rows.1.insert(rows.start, hsla);
+        // highlighted_rows.1.insert(rows.end, hsla);
+        // self.highlighted_rows.entry(TypeId::of::<T>()).or_default();
+        todo!("TODO kb")
     }
 
-    pub fn highlighted_rows(&self) -> Option<Range<u32>> {
-        self.highlighted_rows.clone()
+    pub fn clear_row_highlights<T: 'static>(&mut self) {
+        self.highlighted_rows.remove(&TypeId::of::<T>());
+    }
+
+    pub fn highlighted_rows<T: 'static>(&self) -> Option<&[(Range<Anchor>, Hsla)]> {
+        // Some(self.highlighted_rows.get(&TypeId::of::<T>())?.as_slice())
+        todo!("TODO kb")
+    }
+
+    // TODO kb better names + return a particular type for the display row
+    pub fn highlighted_display_rows(&self, cx: &mut WindowContext) -> BTreeMap<u32, Hsla> {
+        // let snapshot = self.snapshot(cx);
+        // let mut used_highlight_indices = HashMap::default();
+        // let a = self.highlighted_rows.iter().fold(
+        //     BTreeMap::new(),
+        //     |mut unique_rows, (_, (highlight_order, row_anchors))| {
+        //         for (&row_anchor, &hsla) in row_anchors {
+        //             let row = row_anchor.to_display_point(&snapshot).row();
+        //             let used_index = used_highlight_indices
+        //                 .entry(row)
+        //                 .or_insert(*highlight_order);
+        //             if highlight_order >= used_index {
+        //                 *used_index = *highlight_order;
+        //                 unique_rows.insert(row, hsla);
+        //             }
+        //         }
+        //         unique_rows
+        //     },
+        // );
+        todo!("TODO kb")
     }
 
     pub fn highlight_background<T: 'static>(
